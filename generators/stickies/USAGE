@@ -6,4 +6,4 @@ Example:
 
     This will create:
         public/stylesheets/stickies.css
-        public/javascripts/stickies.js
+        public/javascripts/jquery.jgrowl.js
