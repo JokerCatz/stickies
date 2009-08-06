@@ -26,7 +26,12 @@ module Stickies
   module RenderHelpers
 
     ################################################################################
-    # Render the stickie messages, returning the resulting HTML , map to jGrowl Options , Options are:
+    # Render the stickie messages, returning the resulting HTML , map to jGrowl Options , Options:
+    # for Globel use in render_stickies({})
+    #
+    # +closerTemplate+ [<div>"[ close all ]"</div>] This content is used for the close-all link that is added to the bottom of a jGrowl container when it contains more than one notification.
+    #
+    # for Sub stickies
     #
     # +header+ [""] Optional header to prefix the message, this is often helpful for associating messages to each other.
     # +sticky+ [false] When set to true a message will stick to the screen until it is intentionally closed by the user.
@@ -40,7 +45,6 @@ module Stickies
     # +easing+ ["swing"] The easing method to be used with the animation for opening and closing a notification.
     # +closer+ [true] Whether or not the close-all button should be used when more then one notification appears on the screen. Optionally this property can be set to a function which will be used as a callback when the close all button is clicked.
     # +closeTemplate+ [&times;] This content is used for the individual notification close links that are added to the corner of a notification.
-    # +closerTemplate+ [<div>"[ close all ]"</div>] This content is used for the close-all link that is added to the bottom of a jGrowl container when it contains more than one notification.
     # +log+ [function(e,m,o) {""}] Callback to be used before anything is done with the notification. This is intended to be used if the user would like to have some type of logging mechanism for all notifications passed to jGrowl. This callback receives the notification's DOM context, the notifications message and it's option object.
     # +beforeOpen+ [function(e,m,o) {""}] Callback to be used before a new notification is opened. This callback receives the notification's DOM context, the notifications message and it's option object.
     # +open+ [function(e,m,o) {""} 	Callback to be used when a new notification is opened. This callback receives the notification's DOM context, the notifications message and it's option object.
@@ -51,17 +55,17 @@ module Stickies
     # +debug_mode+ [false] debug mode for firebug
     ################################################################################
 
-    def render_stickies (options={})
+    def render_stickies(configuration={})
       configuration = {
         :key            => :stickies,
         :link_html      => {},
-      }.update(options)
+      }.update(configuration)
 
       #init
       sub_html = ""
       html = ""
       Stickies::Messages.fetch(session, configuration[:key]) do |messages|
-        sub_html << render_stickies_separate(messages, configuration)
+        sub_html << render_stickies_separate(messages , configuration)
         messages.flash
       end
 
@@ -78,7 +82,7 @@ module Stickies
                 $.jGrowl.defaults.closer = function() {
                   console.log('+ (configuration[:closerTemplate] || "[ close all ]") +', this);
                 };
-        }' if configuration[:closer] || configuration[:closerTemplate]
+        }' if configuration[:closerTemplate]
 
         #firebug log
         html << %Q[
@@ -100,34 +104,39 @@ module Stickies
 
     ################################################################################
     # Helper method to render each stickie message as a separate div.
-    def render_stickies_separate (messages, options)
+    def render_stickies_separate(messages,configuration={})
       html = ''
-      sub_html = '' # to fix hash end
       messages.each do |m|
+        #init
+        sub_html = '' # to fix hash end
+        configuration = {}
+        #merge options
+        configuration = configuration.update(m.options)
+
         #jGrowl start
 				html << '$.jGrowl("' + m.message.gsub(/\\/, '\&\&').gsub(/'/, "''")  + '", {'
-        sub_html << "header: \"" + options[:header] + "\"," if options[:header]
-        sub_html << "sticky: " + options[:sticky] + "," if options[:sticky] != nil
-        sub_html << "glue: \"" + options[:glue] + "\"," if options[:glue]
-        sub_html << "position: \"" + options[:position] + "\"," if options[:position]
+        sub_html << "header: \"" + configuration[:header] + "\"," if configuration[:header]
+        sub_html << "sticky: " + configuration[:sticky] + "," if configuration[:sticky] != nil
+        sub_html << "glue: \"" + configuration[:glue] + "\"," if configuration[:glue]
+        sub_html << "position: \"" + configuration[:position] + "\"," if configuration[:position]
         #####
-        sub_html << "theme: \"" + (options[:theme] || m.level.to_s ) + "\","
-        sub_html << "corners: \"" + options[:corners] + "px\"," if options[:corners]
-        sub_html << "check: " + options[:check] + "," if options[:check]
-        sub_html << "life: " + options[:life] + "," if options[:life]
-        sub_html << "speed: \"" + options[:speed] + "\"," if options[:speed]
-        sub_html << "easing: \"" + options[:easing] + "\"," if options[:easing]
-        sub_html << "closer:" + options[:closer] + "," if options[:closer] != nil
-        sub_html << "closeTemplate: \"" + options[:closeTemplate] + "\"," if options[:closeTemplate]
+        sub_html << "theme: \"" + (configuration[:theme] || m.level.to_s ) + "\","
+        sub_html << "corners: \"" + configuration[:corners] + "px\"," if configuration[:corners]
+        sub_html << "check: " + configuration[:check] + "," if configuration[:check]
+        sub_html << "life: " + configuration[:life] + "," if configuration[:life]
+        sub_html << "speed: \"" + configuration[:speed] + "\"," if configuration[:speed]
+        sub_html << "easing: \"" + configuration[:easing] + "\"," if configuration[:easing]
+        sub_html << "closer:" + configuration[:closer] + "," if configuration[:closer] != nil
+        sub_html << "closeTemplate: \"" + configuration[:closeTemplate] + "\"," if configuration[:closeTemplate]
           #finction
-        sub_html << 'log: function(e,m,o) {' + options[:log] + '},' if options[:log]
-				sub_html << 'beforeOpen: function(e,m,o) {' + options[:beforeOpen] + '},' if options[:beforeOpen]
-				sub_html << 'open: function(e,m,o) {' + options[:open] + '},' if options[:open]
-				sub_html << 'beforeClose: function(e,m,o) {' + options[:beforeClose] + '},' if options[:beforeClose]
-				sub_html << 'close: function(e,m,o) {' + options[:close] + '},' if options[:close]
+        sub_html << 'log: function(e,m,o) {' + configuration[:log] + '},' if configuration[:log]
+				sub_html << 'beforeOpen: function(e,m,o) {' + configuration[:beforeOpen] + '},' if configuration[:beforeOpen]
+				sub_html << 'open: function(e,m,o) {' + configuration[:open] + '},' if configuration[:open]
+				sub_html << 'beforeClose: function(e,m,o) {' + configuration[:beforeClose] + '},' if configuration[:beforeClose]
+				sub_html << 'close: function(e,m,o) {' + configuration[:close] + '},' if configuration[:close]
           #anime
-        sub_html << 'animateOpen: function(e,m,o) {' + options[:animateOpen] + '},' if options[:animateOpen]
-        sub_html << 'animateClose: function(e,m,o) {' + options[:animateClose] + '},' if options[:animateClose]
+        sub_html << 'animateOpen: function(e,m,o) {' + configuration[:animateOpen] + '},' if configuration[:animateOpen]
+        sub_html << 'animateClose: function(e,m,o) {' + configuration[:animateClose] + '},' if configuration[:animateClose]
           #merge sub_html
         html << sub_html[0..(sub_html.length - 2)] if sub_html.length > 0
         #jGrowl end
