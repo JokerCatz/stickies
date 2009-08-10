@@ -16,13 +16,16 @@ then add the main code in layout or any you want to show
 FIXTURE
 
 default :
+
    :remember => true,
    :name     => :browser_warning,
    :seen_in  => 24.hours,
 addon-jGrowl support :
+
   Globel only , like <%= render_stickies(:closerTemplate => "CloseAll" , :header => "HiHi!!") %>
 
    :closerTemplate => "[ close all ]" This content is used for the close-all link that is added to the bottom of a jGrowl container when it contains more than one notification.
+   :debug_mode => false ; debug mode for firebug
 
   Sub & Globel setting with stickies , like error_stickie("Your browser sucks" , {:life => "20000" , :corners => "20"})
 
@@ -45,7 +48,6 @@ addon-jGrowl support :
    :close => function(e,m,o) {""} ; Callback to be used when a new notification is closed. This callback receives the notification's DOM context, the notifications message and it's option object.
    :animateOpen => { "opacity: 'show'" } ; The animation properties to use when opening a new notification (default to fadeOut).
    :animateClose => { "opacity: 'hide'" } ; The animation properties to use when closing a new notification (defaults to fadeIn).
-   :debug_mode => false ; debug mode for firebug
 
 handlino-stickies
 
