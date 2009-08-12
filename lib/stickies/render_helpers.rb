@@ -57,7 +57,7 @@ module Stickies
       sub_html = ""
       #build
       Stickies::Messages.fetch(session, :stickies) do |messages|
-        sub_html << render_stickies_separate(messages)
+        sub_html << render_stickies_separate(messages,configuration)
         messages.flash
       end
       #package
@@ -86,13 +86,15 @@ module Stickies
     end
     ################################################################################
     # Helper method to render each stickie message as a separate div.
-    def render_stickies_separate(messages)
+    def render_stickies_separate(messages,configuration)
       html = ''
       messages.each do |message|
         sub_html = ''
         #insert
         message.options.each_key do |temp_config|
-          sub_html << STICKIES_JAVASCRIPT[temp_config][0] + message.options[temp_config].to_s + STICKIES_JAVASCRIPT[temp_config][1] if STICKIES_JAVASCRIPT.include?(temp_config)
+          #update for support all option
+          temp_configuration = configuration.merge(message.options)
+          sub_html << STICKIES_JAVASCRIPT[temp_config][0] + temp_configuration[temp_config].to_s + STICKIES_JAVASCRIPT[temp_config][1] if STICKIES_JAVASCRIPT.include?(temp_config)
         end
         #jGrowl start
         html << '                $.jGrowl("' + message.message.gsub(/\\/, '\&\&').gsub(/'/, "''")  + '", {'
