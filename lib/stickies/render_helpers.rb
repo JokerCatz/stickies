@@ -97,7 +97,7 @@ module Stickies
           sub_html << STICKIES_JAVASCRIPT[temp_config][0] + temp_configuration[temp_config].to_s + STICKIES_JAVASCRIPT[temp_config][1] if STICKIES_JAVASCRIPT.include?(temp_config)
         end
         #jGrowl start
-        html << '                $.jGrowl("' + message.message.gsub(/\\/, '\&\&').gsub(/'/, "''")  + '", {'
+        html << '                $.jGrowl("' + message.message.to_s.gsub(/\\/, '\&\&').gsub(/'/, "''")  + '", {'
         #fix hash end of javascript
         html << sub_html[0..(sub_html.length - 2)] if sub_html.length > 0
         #jGrowl end
